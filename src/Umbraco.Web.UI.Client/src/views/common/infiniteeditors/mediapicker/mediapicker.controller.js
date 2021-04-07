@@ -82,14 +82,7 @@ angular.module("umbraco")
                 dataTypeKey = $scope.model.dataTypeKey;
             }
 
-            vm.searchOptions = {
-                pageNumber: 1,
-                pageSize: 20,
-                totalItems: 0,
-                totalPages: 0,
-                filter: '',
-                dataTypeKey: dataTypeKey
-            };
+            vm.searchOptions = {};
             vm.layout = {
                 layouts: [{ name: "Grid", icon: "icon-thumbnails-small", path: "gridpath", selected: true },
                 { name: "List", icon: "icon-list", path: "listpath", selected: true }],
@@ -131,6 +124,8 @@ angular.module("umbraco")
             }
 
             function onInit() {
+                // Set search options for browsing folder
+                setViewModelFolderOptions();
 
                 clipboardService.retriveEntriesOfType(clipboardService.TYPES.IMAGE, ["Media"]).forEach(item => {
                     var media = item.data.media;
@@ -444,24 +439,12 @@ angular.module("umbraco")
             var debounceSearchMedia = _.debounce(function () {
                 $scope.$apply(function () {
                     if (vm.searchOptions.filter) {
-                        vm.searchOptions.pageNumber = 1;
-                        vm.searchOptions.totalItems = 0;
-                        vm.searchOptions.totalPages = 0
-                        vm.searchOptions.pageSize = 20;
+                        // set search options for search
+                        setViewModelSearchOptions(vm.searchOptions.filter);
                         searchMedia();
-
                     } else {
-
-                        // reset pagination
-                        vm.searchOptions = {
-                            pageNumber: 1,
-                            pageSize: 20,
-                            totalItems: 0,
-                            totalPages: 0,
-                            filter: '',
-                            dataTypeKey: dataTypeKey
-                        };
-
+                        // reset pagination and set search option for browsing folder
+                        setViewModelFolderOptions();
                         getChildren($scope.currentFolder.id);
                     }
                 });
@@ -632,6 +615,37 @@ angular.module("umbraco")
             function close() {
                 if ($scope.model && $scope.model.close) {
                     $scope.model.close($scope.model);
+                }
+            }
+
+            /**
+             * Set the view model search options for searching
+             * @param {string} searchQuery
+             */
+            function setViewModelSearchOptions(searchQuery) {
+                vm.searchOptions = {
+                    pageNumber: 1,
+                    pageSize: 20,
+                    totalItems: 0,
+                    totalPages: 0,
+                    filter: searchQuery,
+                    dataTypeKey: dataTypeKey
+                }
+            }
+
+            /**
+             * Set the view model search option for browsing folder
+             */
+            function setViewModelFolderOptions() {
+                vm.searchOptions = {
+                    pageNumber: 1,
+                    pageSize: 20,
+                    totalItems: 0,
+                    totalPages: 0,
+                    filter: '',
+                    dataTypeKey: dataTypeKey,
+                    orderBy: "SortOrder",
+                    orderDirection: "Descending"
                 }
             }
 
